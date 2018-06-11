@@ -8,20 +8,32 @@ import { Http, RequestOptions, Headers } from "@angular/http";
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  allMessages: string[];
+  allNodes: any[];
+  canRefreshNodeList: boolean;
+  allMessages: any[];
   canSendMessage: boolean;
 
   constructor(
-    private _signalRService: SignalRService,
+    private _blockService: SignalRService,
+    private _nodeService: SignalRService,
     private _http: Http
   ) {
+    this._blockService.init(`http://localhost:5000/hubs/block`);
+    this._nodeService.init(`http://localhost:5000/hubs/node`);
     this.subscribeToEvents();
     this.allMessages = [];
   }
 
-  sendMessage() {
+  updateBlocks() {
     if (this.canSendMessage) {
       this._http.post(`http://localhost:5000/api/block`, null, this.getJsonHeaders())
+        .subscribe();
+    }
+  }
+
+  updateNodes() {
+    if (this.canRefreshNodeList) {
+      this._http.post(`http://localhost:5000/api/node`, null, this.getJsonHeaders())
         .subscribe();
     }
   }
@@ -32,15 +44,24 @@ export class AppComponent {
   }
 
   private subscribeToEvents(): void {
-    this._signalRService.connectionEstablished.subscribe(() => {
-      this.canSendMessage = true;
+    // this._blockService.connectionEstablished.subscribe(() => {
+    //   this.canSendMessage = true;
+    // });
+
+    // this._blockService.messageReceived.subscribe((message: string) => {
+    //   this.allMessages.unshift(message);
+    //   if (this.allMessages.length >= 20){
+    //     this.allMessages.pop();
+    //   }
+    // });
+
+    this._nodeService.connectionEstablished.subscribe(() => {
+      this.canRefreshNodeList = true;
     });
 
-    this._signalRService.messageReceived.subscribe((message: string) => {
-      this.allMessages.unshift(message);
-      if (this.allMessages.length >= 20){
-        this.allMessages.pop();
-      }
+    this._nodeService.messageReceived.subscribe((messages: any[])=>{
+      console.log(messages);
+      this.allMessages = messages;
     });
   }
 }
