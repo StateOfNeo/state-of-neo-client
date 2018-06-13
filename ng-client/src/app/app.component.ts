@@ -79,7 +79,7 @@ export class AppComponent {
           x.peers = parseInt((Math.random() * 180).toFixed(0));
 
           markers.push({
-            latLng: [x.lat, x.long], name: x.ipAddress
+            latLng: [x.lat, x.long], name: x.ip
           });
         });
 
