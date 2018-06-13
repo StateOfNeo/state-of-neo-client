@@ -15,15 +15,19 @@
                 <div class="col-sm-6">
                     <div id="panel-1" class="panel panel-default">
                         <div class="panel-body">
-                            <div class="row" style="font-size: 3em">
+                            <div class="row" style="font-size: 2.5em">
                                 <div class="col-sm-4">
-                                    <div class="panel panel-body">
-                                        <i class="fas fa-cube" style="font-size: 1.5em"></i>
-                                        {{latestBlock}}
+                                    <div class="panel panel-body text-primary">
+                                        <div style="font-size: 13px; padding-left: 80px"><strong>BEST BLOCK</strong></div>
+                                        <div id="last-block-stats">
+                                            <i id="last-block-icon" class="fas fa-cube" style="font-size: 1.5em"></i>
+                                            #{{latestBlock | number}}
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
-                                    <div class="panel panel-body">
+                                    <div class="panel panel-body text-primary">
+                                        <div style="font-size: 13px; padding-left: 51px"><strong>LAST BLOCK</strong></div>
                                         <i class="fa fa-hourglass-end spin"></i>
                                         {{secondsSinceLastBlock}} s ago
                                     </div>
@@ -43,19 +47,21 @@
                         <div class="panel-body">  
                             <div class="col-sm-6" *ngFor="let node of allNodes">
                                 <div style="background: transparent; color: #666; border: 1px solid #999" class="box default"><!-- default, danger, warning, info, success -->
-                                    <div class="box-title"><!-- add .noborder class if box-body is removed -->
-                                        <h4 style="color: #666">{{node.ipAddress}}</h4>
+                                    <div class="box-title" style="padding-top: 0"><!-- add .noborder class if box-body is removed -->
+                                        <h4 style="color: #666">{{node?.url ? nodel?.url : node?.ipAddress}}:{{node.port}}</h4>
                                         <span class="text-success"><i class="fas fa-circle"></i> live</span>
                                         <span class="pull-right block" style="font-size: 1.4em"><i class="fas fa-signal"></i> {{node.latency}} ms</span>
                                         <i class="fa fa-globe"></i>
+                                        <div class="text-center">
+                                            {{node.type}}
+                                        </div>
                                     </div>    
                                     <div class="box-body text-center">
                                         <h2 style="margin-top: -40px" style="color: #666"><i class="fas fa-users"></i> {{node.peers}}</h2>
-                                        <span class="sparkline" data-plugin-options="{&quot;type&quot;:&quot;bar&quot;,&quot;barColor&quot;:&quot;#ffffff&quot;,&quot;height&quot;:&quot;35px&quot;,&quot;width&quot;:&quot;100%&quot;,&quot;zeroAxis&quot;:&quot;false&quot;,&quot;barSpacing&quot;:&quot;2&quot;}"><canvas width="160" height="35" style="display: inline-block; width: 160px; height: 35px; vertical-align: top;"></canvas></span>
                                         v. {{node.version}}
-                                    </div>    
+                                    </div>
                                 </div>
-                            </div>      
+                            </div>
                         </div>
                     </div>
                 </div>
