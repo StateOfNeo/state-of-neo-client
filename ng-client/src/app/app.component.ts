@@ -94,18 +94,18 @@ export class AppComponent implements OnInit {
           x.lat = this.getRandomCoordinate();
           x.long = this.getRandomCoordinate();
           x.peers = parseInt((Math.random() * 180).toFixed(0));
-          x.ipAddress = x.ipAddress.substr(x.ipAddress.lastIndexOf(':') + 1);
+          x.ip = x.ip.substr(x.ip.lastIndexOf(':') + 1);
           x.type = 'RPC';
 
-          let saved = this.savedNodes.find(z => z.address == x.ipAddress);
+          let saved = this.savedNodes.find(z => z.address == x.ip);
           x.url = saved ? saved.url : '';
-          if (this.foundNodeIps.indexOf(x.ipAddress) == -1) {
-            this.foundNodeIps.push(x.ipAddress);
-            console.log(x.ipAddress);
+          if (this.foundNodeIps.indexOf(x.ip) == -1) {
+            this.foundNodeIps.push(x.ip);
+            console.log(x.ip);
           }
 
           markers.push({
-            latLng: [x.lat, x.long], name: x.ipAddress
+            latLng: [x.lat, x.long], name: x.ip
           });
         });
 
