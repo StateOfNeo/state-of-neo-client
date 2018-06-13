@@ -71,7 +71,8 @@
       "location": "USA",
       "locale": "us",
       "port": "8880",
-      "type": "RPC"
+      "type": "RPC",
+      "address": "104.25.2.11"
     },
     {
       "protocol": "http",
@@ -79,7 +80,8 @@
       "location": "USA",
       "locale": "us",
       "port": "8880",
-      "type": "RPC"
+      "type": "RPC",
+      "address": "104.25.3.11"
     },
     {
       "protocol": "http",
@@ -87,7 +89,8 @@
       "location": "USA",
       "locale": "us",
       "port": "8880",
-      "type": "RPC"
+      "type": "RPC",
+      "address": "104.25.2.11"
     },
     {
       "protocol": "http",
@@ -95,7 +98,8 @@
       "location": "USA",
       "locale": "us",
       "port": "8880",
-      "type": "RPC"
+      "type": "RPC",
+      "address": "104.25.3.11"
     },
     {
       "protocol": "http",
@@ -103,7 +107,8 @@
       "location": "USA",
       "locale": "us",
       "port": "8880",
-      "type": "RPC"
+      "type": "RPC",
+      "address": "104.25.2.11"
     }
   ]
 }
