@@ -94,7 +94,7 @@ export class AppComponent implements OnInit {
           x.lat = this.getRandomCoordinate();
           x.long = this.getRandomCoordinate();
           x.peers = parseInt((Math.random() * 180).toFixed(0));
-          x.ip = x.ip.substr(x.ip.lastIndexOf(':') + 1);
+          // x.ip = x.ip.substr(x.ip.lastIndexOf(':') + 1);
           x.type = 'RPC';
 
           let saved = this.savedNodes.find(z => z.address == x.ip);
