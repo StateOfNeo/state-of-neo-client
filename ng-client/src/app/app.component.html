@@ -1,27 +1,88 @@
-<h2>Blocks information</h2>
-<form (ngSubmit)="updateBlocks()">
-    <button type="submit" class="btn btn-default" [disabled]="!canSendMessage">See current blocks</button>
-</form>
-<ul>
-    <li *ngFor="let message of allMessages" style="list-style: none;">
-        {{message.ipAddress}}
-    </li>
-</ul>
 
-<br>
-<br>
-<br>
-<hr>
-<br>
-<br>
-<br>
+<div id="wrapper">
+    
+    <!-- HEADER -->
+    <header id="header">
+        <!-- Logo -->
+        <span class="logo pull-left">
+            <strong style="letter-spacing: 3px; color: #FFF; font-size: 22px">stateofneo</strong>
+        </span>
+    </header>
 
-<h2>Nodes information</h2>
-<form (ngSubmit)="updateNodes()">
-    <button type="submit" class="btn btn-default" [disabled]="!canRefreshNodeList">See nodes info</button>
-</form>
-<ul>
-    <li *ngFor="let node of allNodes" style="list-style: none;">
-        {{node.ipAdress}}
-    </li>
-</ul>
+    <section id="middle" style="margin-left: 0">
+        <div id="content" class="padding-20">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div id="panel-1" class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="row" style="font-size: 3em">
+                                <div class="col-sm-4">
+                                    <div class="panel panel-body">
+                                        <i class="fas fa-cube" style="font-size: 1.5em"></i>
+                                        {{latestBlock}}
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="panel panel-body">
+                                        <i class="fa fa-hourglass-end spin"></i>
+                                        {{secondsSinceLastBlock}} s ago
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                </div>
+                            </div>
+
+                            <div>
+                                <div id="world-map"><!-- Vectorial World Map --></div>       
+                            </div> 
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-body">  
+                            <div class="col-sm-6" *ngFor="let node of allNodes">
+                                <div style="background: transparent; color: #666; border: 1px solid #999" class="box default"><!-- default, danger, warning, info, success -->
+                                    <div class="box-title"><!-- add .noborder class if box-body is removed -->
+                                        <h4 style="color: #666">{{node.ipAddress}}</h4>
+                                        <span class="text-success"><i class="fas fa-circle"></i> live</span>
+                                        <span class="pull-right block" style="font-size: 1.4em"><i class="fas fa-signal"></i> {{node.latency}} ms</span>
+                                        <i class="fa fa-globe"></i>
+                                    </div>    
+                                    <div class="box-body text-center">
+                                        <h2 style="margin-top: -40px" style="color: #666"><i class="fas fa-users"></i> {{node.peers}}</h2>
+                                        <span class="sparkline" data-plugin-options="{&quot;type&quot;:&quot;bar&quot;,&quot;barColor&quot;:&quot;#ffffff&quot;,&quot;height&quot;:&quot;35px&quot;,&quot;width&quot;:&quot;100%&quot;,&quot;zeroAxis&quot;:&quot;false&quot;,&quot;barSpacing&quot;:&quot;2&quot;}"><canvas width="160" height="35" style="display: inline-block; width: 160px; height: 35px; vertical-align: top;"></canvas></span>
+                                        v. {{node.version}}
+                                    </div>    
+                                </div>
+                            </div>      
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <h2>Blocks information</h2>
+        <form (ngSubmit)="updateBlocks()">
+            <button type="submit" class="btn btn-default" [disabled]="!canSendMessage">See current blocks</button>
+        </form>
+        <ul>
+            <li *ngFor="let node of allNodes" style="list-style: none;">
+                {{node.ipAddress}}
+            </li>
+        </ul>
+
+        <br>
+
+        <h2>Nodes information</h2>
+        <form (ngSubmit)="updateNodes()">
+            <button type="submit" class="btn btn-default" [disabled]="!canRefreshNodeList">See nodes info</button>
+        </form>
+        <ul>
+            <li *ngFor="let node of allNodes" style="list-style: none;">
+                {{node.ipAdress}}
+            </li>
+        </ul>
+    </section>
+</div>

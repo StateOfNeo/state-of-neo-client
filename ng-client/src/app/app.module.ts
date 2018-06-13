@@ -5,6 +5,8 @@ import { HttpModule } from "@angular/http";
 
 import { AppComponent } from './app.component';
 import { SignalRService } from "src/core/services/signal-r.service";
+import { NodesSignalRService } from "src/core/services/nodes-signal-r.service";
+import { BlocksSignalRService } from "src/core/services/blocks-signal-r.service";
 
 @NgModule({
   declarations: [
@@ -15,7 +17,7 @@ import { SignalRService } from "src/core/services/signal-r.service";
     HttpModule,
     FormsModule
   ],
-  providers: [SignalRService],
+  providers: [SignalRService, NodesSignalRService, BlocksSignalRService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
