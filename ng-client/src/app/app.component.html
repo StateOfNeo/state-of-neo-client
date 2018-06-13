@@ -48,7 +48,7 @@
                             <div class="col-sm-6" *ngFor="let node of allNodes">
                                 <div style="background: transparent; color: #666; border: 1px solid #999" class="box default"><!-- default, danger, warning, info, success -->
                                     <div class="box-title" style="padding-top: 0"><!-- add .noborder class if box-body is removed -->
-                                        <h4 style="color: #666">{{node?.url ? nodel?.url : node?.ip}}:{{node.port}}</h4>
+                                        <h4 style="color: #666">{{getNodeDisplayText(node)}}:{{node.port}}</h4>
                                         <span class="text-success"><i class="fas fa-circle"></i> live</span>
                                         <span class="pull-right block" style="font-size: 1.4em"><i class="fas fa-signal"></i> {{node.latency}} ms</span>
                                         <i class="fa fa-globe"></i>

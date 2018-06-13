@@ -96,7 +96,6 @@ export class AppComponent implements OnInit {
           x.peers = parseInt((Math.random() * 180).toFixed(0));
           // x.ip = x.ip.substr(x.ip.lastIndexOf(':') + 1);
           x.type = 'RPC';
-
           let saved = this.savedNodes.find(z => z.address == x.ip);
           x.url = saved ? saved.url : '';
           if (this.foundNodeIps.indexOf(x.ip) == -1) {
@@ -111,6 +110,7 @@ export class AppComponent implements OnInit {
 
         this.allNodes = this.allNodes.sort((x, y) => y.peers - x.peers);
 
+        console.log(this.allNodes);
        // console.log(nodes);
 
         $('#world-map').html('');
@@ -129,6 +129,10 @@ export class AppComponent implements OnInit {
         });
       }
     });
+  }
+
+  getNodeDisplayText(node: any) {
+    return node.url ? node.url : node.ip;
   }
 
   private getPeers() {
