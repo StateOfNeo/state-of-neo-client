@@ -15,10 +15,6 @@ export class NodeRpcService {
             "id": version
         };
 
-        if (params) {
-            request["params"] = params;
-        }
-
         return this.http.post(address, JSON.stringify(request));
     }
 }

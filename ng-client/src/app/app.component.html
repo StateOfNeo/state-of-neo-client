@@ -5,8 +5,11 @@
     <header id="header">
         <!-- Logo -->
         <span class="logo pull-left">
-            <strong style="letter-spacing: 3px; color: #FFF; font-size: 22px">stateofneo</strong>
+            <strong style="letter-spacing: 3px; color: #FFF; font-size: 22px">stateofneo.io</strong>
         </span>
+        <div class="pull-right" style="padding-top:14px; padding-right: 50px; font-size: 1.1em; font-weight: bold; letter-spacing: 1px">
+            <span style="color: white; cursor: pointer"><i class="fas fa-globe"></i> [MainNet]</span>
+        </div>
     </header>
 
     <section id="middle" style="margin-left: 0">
@@ -18,7 +21,7 @@
                             <div class="row" style="font-size: 2.5em">
                                 <div class="col-sm-4">
                                     <div class="panel panel-body text-primary">
-                                        <div style="font-size: 13px; "><strong>BEST BLOCK</strong></div>
+                                        <div style="font-size: 20px; "><strong>BEST BLOCK</strong></div>
                                         <div id="last-block-stats">
                                             <i id="last-block-icon" class="fas fa-cube" style="font-size: 1.5em"></i>
                                             #{{latestBlock | number}}
@@ -27,14 +30,14 @@
                                 </div>
                                 <div class="col-sm-4">
                                     <div class="panel panel-body text-primary">
-                                        <div style="font-size: 13px; "><strong>LAST BLOCK</strong></div>
+                                        <div style="font-size: 20px; "><strong>LAST BLOCK</strong></div>
                                         <i class="fa fa-hourglass-end spin"></i>
                                         {{secondsSinceLastBlock}} s ago
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
                                     <div class="panel panel-body text-primary">
-                                        <div style="font-size: 13px; "><strong>LIVE NODES</strong></div>
+                                        <div style="font-size: 20px; "><strong>LIVE NODES</strong></div>
                                         <i class="fas fa-desktop"></i>
                                         {{rpcEnabled.length}}
                                     </div>
@@ -59,8 +62,14 @@
                 <div class="col-sm-6">
                     <div id="nodes-panel" class="panel panel-default" style="overflow-y: scroll; margin-bottom: 0">
                         <div class="panel-body">  
-                            <div class="col-sm-6" *ngFor="let node of savedNodes">
-                                <div style="background: transparent; color: #666; border: 1px solid #999" [style.background-color]="node.rpcEnabled ? 'transparent' : '#EEE'" class="box default"><!-- default, danger, warning, info, success -->
+                            <div class="col-sm-6" *ngFor="let node of savedNodes; let i = index" 
+                                (mouseenter)="hoverNode(node)"
+                                (mouseleave)="hoverOffNode(node)"
+                                [style.paddingLeft]="i % 2 == 0 ? '0' : '15px'" 
+                                style="padding-right: 0">
+                                <div style="background: transparent; color: #666; border: 1px solid #999; margin-bottom: 15px; cursor: pointer" 
+                                    [style.background-color]="node.rpcEnabled ? 'transparent' : '#EEE'" 
+                                    class="box default">
                                     <div class="box-title" style="padding-top: 0; padding-bottom: 0">
                                         <h4 style="color: #666">{{getNodeDisplayText(node)}}:{{node.port}}</h4>
                                         <span class="{{(node.rpcEnabled ? 'text-success' : 'text-danger')}} "><i class="fas fa-circle"></i> RPC live</span><br/>
@@ -69,8 +78,8 @@
                                             {{node.pendingTransactions | number}} <small style="letter-spacing: 1px">PENDING TX</small>
                                         </span>
                                         <i class="fa fa-globe"></i>
-                                        <div style="position: absolute; top: 35px; right: 0px; width: 90px" class="text-center">
-                                            <img width="25px" height="25px" src="assets/icons/tsvg/flag-{{node.locale}}.svg"/><br/>
+                                        <div style="position: absolute; top: 30px; right: 0px; width: 90px" class="text-center">
+                                            <img class="img img-thumbnail" width="35px" height="35px" src="assets/icons/tsvg/flag-{{node.locale}}.svg"/><br/>
                                             <span style="font-size: 0.8em">{{node.location}}</span>
                                         </div>
                                     </div>    
@@ -79,7 +88,7 @@
                                             <i class="far fa-clock"></i> 99% UPTIME
                                         </div>
                                         <div class="col-sm-4 text-center" style="padding-left: 0; padding-right: 0; white-space: nowrap">
-                                            <h2 style="margin-top: -40px" style="color: #666"><i class="fas fa-users"></i> {{node.peers}}</h2>
+                                            <h2 style="margin-top: -40px" style="color: #666"><i class="fas fa-users"></i> {{node.connected}}</h2>
                                             <span style="font-size: 0.8em">{{node.version}}</span>
                                         </div>
                                         <div class="col-sm-4 text-center" style="padding-top: 27px; padding-left: 0; padding-right: 0">
