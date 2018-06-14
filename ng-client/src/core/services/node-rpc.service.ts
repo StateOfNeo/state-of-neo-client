@@ -7,7 +7,18 @@ export class NodeRpcService {
 
     }
     
-    callRpcMethod(method: string, address: string) {
-        
+    callRpcMethod(address: string, method: string, version: number, params: any[] = []) {
+        let request = {
+            "jsonrpc": "2.0",
+            "method": method,
+            "params": params,
+            "id": version
+        };
+
+        if (params) {
+            request["params"] = params;
+        }
+
+        return this.http.post(address, JSON.stringify(request));
     }
 }

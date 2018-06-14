@@ -45,11 +45,12 @@
                 <div class="col-sm-6">
                     <div class="panel panel-default">
                         <div class="panel-body">  
-                            <div class="col-sm-6" *ngFor="let node of allNodes">
-                                <div style="background: transparent; color: #666; border: 1px solid #999" class="box default"><!-- default, danger, warning, info, success -->
+                            <div class="col-sm-6" *ngFor="let node of savedNodes">
+                                <div style="background: transparent; color: #666; border: 1px solid #999" [style.background-color]="node.rpcEnabled ? 'transparent' : '#EEE'" class="box default"><!-- default, danger, warning, info, success -->
                                     <div class="box-title" style="padding-top: 0"><!-- add .noborder class if box-body is removed -->
                                         <h4 style="color: #666">{{getNodeDisplayText(node)}}:{{node.port}}</h4>
-                                        <span class="text-success"><i class="fas fa-circle"></i> live</span>
+                                        <span class="{{(node.rpcEnabled ? 'text-success' : 'text-danger')}}"><i class="fas fa-circle"></i> RPC live</span>
+                                        <div *ngIf="node.blockCount"><i class="fa fa-block"></i>#{{node.blockCount | number}}</div>
                                         <span class="pull-right block" style="font-size: 1.4em"><i class="fas fa-signal"></i> {{node.latency}} ms</span>
                                         <i class="fa fa-globe"></i>
                                         <div class="text-center">
