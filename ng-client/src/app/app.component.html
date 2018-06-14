@@ -13,12 +13,12 @@
         <div id="content" class="padding-20">
             <div class="row">
                 <div class="col-sm-6">
-                    <div id="panel-1" class="panel panel-default">
-                        <div class="panel-body">
+                    <div id="main-panel" class="panel panel-default">
+                        <div class="panel-body" style="height: 100%">
                             <div class="row" style="font-size: 2.5em">
                                 <div class="col-sm-4">
                                     <div class="panel panel-body text-primary">
-                                        <div style="font-size: 13px; padding-left: 80px"><strong>BEST BLOCK</strong></div>
+                                        <div style="font-size: 13px; "><strong>BEST BLOCK</strong></div>
                                         <div id="last-block-stats">
                                             <i id="last-block-icon" class="fas fa-cube" style="font-size: 1.5em"></i>
                                             #{{latestBlock | number}}
@@ -27,12 +27,17 @@
                                 </div>
                                 <div class="col-sm-4">
                                     <div class="panel panel-body text-primary">
-                                        <div style="font-size: 13px; padding-left: 51px"><strong>LAST BLOCK</strong></div>
+                                        <div style="font-size: 13px; "><strong>LAST BLOCK</strong></div>
                                         <i class="fa fa-hourglass-end spin"></i>
                                         {{secondsSinceLastBlock}} s ago
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
+                                    <div class="panel panel-body text-primary">
+                                        <div style="font-size: 13px; "><strong>LIVE NODES</strong></div>
+                                        <i class="fas fa-desktop"></i>
+                                        {{rpcEnabled.length}}
+                                    </div>
                                 </div>
                             </div>
 
@@ -52,31 +57,30 @@
                     </div>
                 </div>
                 <div class="col-sm-6">
-                    <div class="panel panel-default">
+                    <div id="nodes-panel" class="panel panel-default" style="overflow-y: scroll; margin-bottom: 0">
                         <div class="panel-body">  
                             <div class="col-sm-6" *ngFor="let node of savedNodes">
                                 <div style="background: transparent; color: #666; border: 1px solid #999" [style.background-color]="node.rpcEnabled ? 'transparent' : '#EEE'" class="box default"><!-- default, danger, warning, info, success -->
-                                    <div class="box-title" style="padding-top: 0; padding-bottom: 0"><!-- add .noborder class if box-body is removed -->
+                                    <div class="box-title" style="padding-top: 0; padding-bottom: 0">
                                         <h4 style="color: #666">{{getNodeDisplayText(node)}}:{{node.port}}</h4>
                                         <span class="{{(node.rpcEnabled ? 'text-success' : 'text-danger')}} "><i class="fas fa-circle"></i> RPC live</span><br/>
-                                        <span *ngIf="node.blockCount"><i class="fa fa-block"></i>#{{node.blockCount | number}}</span><br />
+                                        <span *ngIf="node.blockCount"><i class="fa fa-block"></i>#{{node.blockCount | number}}</span> <span *ngIf="nodeIsBehind(node)" [class]="getClassForNodeBlocks(node)"> ({{latestBlock - node.blockCount | number}} blocks behind)</span> <br />
                                         <span>
-                                            {{node.pendingTransactions}} <small style="letter-spacing: 1px">PENDING TX</small>
+                                            {{node.pendingTransactions | number}} <small style="letter-spacing: 1px">PENDING TX</small>
                                         </span>
                                         <i class="fa fa-globe"></i>
-                                        <!-- <son-icon [name]="'flag-' + node.locale"></son-icon> -->
-                                        <div style="position: absolute; top: 35px; right: 0px; width: 90px" class="text-center" >
+                                        <div style="position: absolute; top: 35px; right: 0px; width: 90px" class="text-center">
                                             <img width="25px" height="25px" src="assets/icons/tsvg/flag-{{node.locale}}.svg"/><br/>
                                             <span style="font-size: 0.8em">{{node.location}}</span>
                                         </div>
                                     </div>    
                                     <div class="box-body">
                                         <div class="col-sm-4 text-center" style="padding-top: 30px; padding-left: 0; padding-right: 0">
-                                            99% UPTIME
+                                            <i class="far fa-clock"></i> 99% UPTIME
                                         </div>
-                                        <div class="col-sm-4 text-center" style="padding-left: 0; padding-right: 0">
+                                        <div class="col-sm-4 text-center" style="padding-left: 0; padding-right: 0; white-space: nowrap">
                                             <h2 style="margin-top: -40px" style="color: #666"><i class="fas fa-users"></i> {{node.peers}}</h2>
-                                            <span style="font-size: 0.9em">{{node.version}}</span>
+                                            <span style="font-size: 0.8em">{{node.version}}</span>
                                         </div>
                                         <div class="col-sm-4 text-center" style="padding-top: 27px; padding-left: 0; padding-right: 0">
                                             <span style="font-size: 1.3em"><i class="fas fa-signal"></i> {{node.latency}} ms</span><br/>

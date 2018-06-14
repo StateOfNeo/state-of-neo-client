@@ -35,6 +35,7 @@ export class AppComponent implements OnInit {
 
     setInterval(() => this.secondsSinceLastBlock++, 1000);
     setInterval(() => this.sort(), 5000);
+    setInterval(() => this.updateNodesData(), 5000);
   }
 
   get savedRpc() {
@@ -42,7 +43,7 @@ export class AppComponent implements OnInit {
   }
 
   get rpcEnabled() {
-    return this.savedNodes.filter(x => x.rpcEnabled);
+    return this.savedNodes.filter(x => x.type == 'RPC' && x.rpcEnabled);
   }
 
   ngOnInit() {
@@ -58,6 +59,17 @@ export class AppComponent implements OnInit {
     this._http.get(`http://localhost:5000/api/block/getheight`)
       .subscribe(x => this.updateBestBlock(parseInt(x.json())));
 
+      // window height - header - body padding top and bottom
+    let height = $(window).height() - 50 - 20 - 20;
+    $('#nodes-panel').css('height', height + 'px');
+    $('#main-panel').css('height', height + 'px');
+  }
+
+  updateNodesData() {
+    this.getVersion(this.rpcEnabled);
+    this.getPeers(this.rpcEnabled);
+    this.getRawMemPool(this.rpcEnabled);
+    this.getBlockCount(this.rpcEnabled);
   }
 
   updateBlocks() {
@@ -74,6 +86,23 @@ export class AppComponent implements OnInit {
     }
   }
 
+  nodeIsBehind(node: any) {
+    return node.blockCount < this.latestBlock;
+  }
+
+  getClassForNodeBlocks(node: any) {
+    let difference = this.latestBlock - node.blockCount;
+    if (difference <= 500) {
+      return '';
+    }
+
+    if (difference > 500 && difference < 10000) {
+      return 'text-warning';
+    }
+
+    return 'text-danger';
+  }
+
   protected getJsonHeaders(): RequestOptions {
     const headers = new Headers({ 'Content-Type': 'application/json' });
     return new RequestOptions({ headers: headers });
@@ -85,17 +114,25 @@ export class AppComponent implements OnInit {
         return 1;
       } else if (x.rpcEnabled && !y.rpcEnabled) {
         return -1;
-      }
+      } 
 
       if (x.type != 'RPC' && y.type == 'RPC') {
         return 1;
-      } else if (x.type == 'RPC' && y.type != ' RPC') {
+      } else if (x.type == 'RPC' && y.type != 'RPC') {
         return -1;
       }
 
-      if (!x.peers) {
+      if (!x.blockCount && y.blockCount) {
         return 1;
-      } else if (!y.peers) {
+      } else if (x.blockCount && !y.blockCount) {
+        return -1;
+      } else if (x.blockCount != y.blockCount) {
+        return y.blockCount - x.blockCount;
+      }
+
+      if (!x.peers && y.peers) {
+        return 1;
+      } else if (!y.peers && x.peers) {
         return -1;
       } else {
         return y.peers - x.peers;
@@ -155,19 +192,22 @@ export class AppComponent implements OnInit {
 
         this.getVersion(this.allNodes);
 
+        let marks = [];
+        this.savedNodes.forEach(x => marks.push({latLng: [this.getRandomCoordinate(), this.getRandomCoordinate()]}));
+
         $('#world-map').html('');
-        $('#world-map').css('height', '342px');
+        $('#world-map').css('height', '442px');
         $('#world-map').vectorMap({
           map: 'world_mill_en',
           backgroundColor: 'transparent',
-          markers: markers,
+          markers: marks,
 
           hoverOpacity: 0.7,
           hoverColor: false
         });
 
         $(window).resize(function () {
-          $('#world-map').css('height', '342px');
+          $('#world-map').css('height', '442px');
         });
       }
     });
@@ -188,6 +228,7 @@ export class AppComponent implements OnInit {
           let json = res.json();
           if (json.result) {
             x.peers = parseInt(json.result.connected.length);
+            this.sort();
           } else {
             console.log(res);
           }
@@ -207,6 +248,7 @@ export class AppComponent implements OnInit {
           let response = res.json();
           x.version = response.result.useragent;
           x.rpcEnabled = true;
+          this.sort();
         }, err => {
           x.rpcEnabled = false;
           x.latency = 0;
@@ -224,6 +266,7 @@ export class AppComponent implements OnInit {
           x.latency = x.lastResponseTime - requestStart;
           let response = res.json();
           x.blockCount = response.result;
+          this.sort();
           console.log(response);
         }, err => {
           x.rpcEnabled = false;
@@ -243,6 +286,7 @@ export class AppComponent implements OnInit {
           let response = res.json();
           x.pendingTransactions = response.result.length;
           console.log(response);
+          this.sort();
         });
     });
   }
