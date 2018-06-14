@@ -42,7 +42,7 @@ export class AppComponent implements OnInit {
   }
 
   get rpcEnabled() {
-    return this.allNodes.filter(x => x.rpcEnabled);
+    return this.savedNodes.filter(x => x.rpcEnabled);
   }
 
   ngOnInit() {
@@ -52,6 +52,7 @@ export class AppComponent implements OnInit {
         this.getVersion(this.savedRpc);
         this.getPeers(this.savedRpc);
         this.getRawMemPool(this.savedRpc);
+        this.getBlockCount(this.savedRpc);
       });
 
     this._http.get(`http://localhost:5000/api/block/getheight`)
@@ -142,8 +143,8 @@ export class AppComponent implements OnInit {
             console.log('found' + saved.url);
           }
           x.url = saved ? saved.url : '';
-          x.protocol = saved ? saved.protocol : 'http';
-          x.port = saved ? saved.port ? saved.port : '10331' : '10331';
+          x.protocol = (saved && saved.protocol) ? saved.protocol : 'http';
+          x.port = (saved && saved.port) ? saved.port : '10331';
 
           markers.push({
             latLng: [x.lat, x.long], name: x.ip
@@ -240,12 +241,13 @@ export class AppComponent implements OnInit {
           x.lastResponseTime = Date.now();
           x.latency = x.lastResponseTime - requestStart;
           let response = res.json();
+          x.pendingTransactions = response.result.length;
           console.log(response);
         });
     });
   }
 
   private getRandomCoordinate() {
-    return parseFloat((Math.random() * 90).toFixed(2)) * ((Math.random() * 10) % 2 == 0 ? 1 : -1);
+    return parseFloat((Math.random() * 90).toFixed(2));
   }
 }

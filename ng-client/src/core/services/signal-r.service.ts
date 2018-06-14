@@ -38,8 +38,8 @@ export class SignalRService {
     }
 
     private registerOnServerEvents(): void {
-        // this._hubConnection.on('Receive', (message: any) => {
-        //     this.messageReceived.emit(message);
-        // });
+        this._hubConnection.on('Receive', (message: any) => {
+            this.messageReceived.emit(message);
+        });
     }
 }
