@@ -50,6 +50,8 @@ export class AppComponent implements OnInit {
     this._http.get('..\\assets\\json\\mainnet.nodes.json')
       .subscribe(x => {
         this.savedNodes = x.json().sites;
+        this.savedNodes.forEach(x => x.upTime = 99);
+
         this.getVersion(this.savedRpc);
         // this.getPeers(this.savedRpc);
         this.getRawMemPool(this.savedRpc);
@@ -92,54 +94,9 @@ export class AppComponent implements OnInit {
     return node.blockCount < this.latestBlock;
   }
 
-  getClassForNodeBlocks(node: any) {
-    let difference = this.latestBlock - node.blockCount;
-    if (difference <= 500) {
-      return '';
-    }
-
-    if (difference > 500 && difference < 10000) {
-      return 'text-warning';
-    }
-
-    return 'text-danger';
-  }
-
   protected getJsonHeaders(): RequestOptions {
     const headers = new Headers({ 'Content-Type': 'application/json' });
     return new RequestOptions({ headers: headers });
-  }
-
-  private sort() {
-    this.savedNodes = this.savedNodes.sort((x, y) => {
-      if (!x.rpcEnabled && y.rpcEnabled) {
-        return 1;
-      } else if (x.rpcEnabled && !y.rpcEnabled) {
-        return -1;
-      } 
-
-      if (x.type != 'RPC' && y.type == 'RPC') {
-        return 1;
-      } else if (x.type == 'RPC' && y.type != 'RPC') {
-        return -1;
-      }
-
-      if (!x.blockCount && y.blockCount) {
-        return 1;
-      } else if (x.blockCount && !y.blockCount) {
-        return -1;
-      } else if (x.blockCount != y.blockCount) {
-        return y.blockCount - x.blockCount;
-      }
-
-      if (!x.connected && y.connected) {
-        return 1;
-      } else if (!y.connected && x.connected) {
-        return -1;
-      } else {
-        return y.connected - x.connected;
-      }
-    });
   }
 
   private updateBestBlock(height: number): void {
@@ -207,16 +164,22 @@ export class AppComponent implements OnInit {
 
           hoverOpacity: 0.7,
           hoverColor: false,
+          markersSelectable: true,
           onMarkerSelected: (e: any, code: string, isSelected: boolean, selectedMarkers: any[]) => {
-            console.log(e);
+            $('div.jvectormap-container').trigger('markerLabelShow', [map.label, code]);
           },
           onMarkerClick: (e: any, code: string) => {
 
           },
-          onMarkerLabelShow: (e: any, label: any, code: string) => {
-            label.html('<h1>TEST TEST TEST</h1>');
+          onRegionLabelShow: (e: any) => {
+            e.preventDefault();
           },
-          markersSelectableOne: true
+          onMarkerLabelShow: (e: any, label: any, code: string) => {
+            console.log(label);
+            label.html('<h1>TEST TEST TEST</h1>');
+
+            console.log($(label));
+          }
         });
 
         let map = $('#world-map').vectorMap('get', 'mapObject');
@@ -235,15 +198,12 @@ export class AppComponent implements OnInit {
 
   hoverNode(node: any) {
     let marker = this.getMarkerByName(this.getNodeDisplayText(node));
-   // marker.element.isSelected = true;
     marker.element.isHovered = true;
 
     let index = marker.element.properties['data-index'];
 
     let map = $('#world-map').vectorMap('get', 'mapObject');
     map.setSelectedMarkers(index);
-
-    console.log(marker);
   }
 
   getMarkerByName(name: string): any {
@@ -258,6 +218,71 @@ export class AppComponent implements OnInit {
 
   getNodeDisplayText(node: any) {
     return node.url ? node.url : node.ip;
+  }
+
+  getClassForNodeBlocks(node: any) {
+    let difference = this.latestBlock - node.blockCount;
+    if (difference <= 500) {
+      return '';
+    }
+
+    if (difference > 500 && difference < 10000) {
+      return 'text-warning';
+    }
+
+    return 'text-danger';
+  }
+
+  getClassForNodeLatency(node: any) {
+    if (node.latency && node.latency < 350) {
+      return 'text-success';
+    } else if (node.latency >= 350 && node.latency < 2500) {
+      return 'text-warning';
+    } else {
+      return 'text-danger';
+    }
+  }
+
+  getClassForNodeUptime(node: any) {
+    if (node.upTime && node.upTime >= 98) {
+      return 'text-success';
+    } else if (node.upTime < 98 && node.upTime >= 93) {
+      return 'text-warning';
+    } else {
+      return 'text-danger';
+    }
+  }
+
+  private sort() {
+    this.savedNodes = this.savedNodes.sort((x, y) => {
+      if (!x.rpcEnabled && y.rpcEnabled) {
+        return 1;
+      } else if (x.rpcEnabled && !y.rpcEnabled) {
+        return -1;
+      } 
+
+      if (x.type != 'RPC' && y.type == 'RPC') {
+        return 1;
+      } else if (x.type == 'RPC' && y.type != 'RPC') {
+        return -1;
+      }
+
+      if (!x.blockCount && y.blockCount) {
+        return 1;
+      } else if (x.blockCount && !y.blockCount) {
+        return -1;
+      } else if (x.blockCount != y.blockCount) {
+        return y.blockCount - x.blockCount;
+      }
+
+      if (!x.connected && y.connected) {
+        return 1;
+      } else if (!y.connected && x.connected) {
+        return -1;
+      } else {
+        return y.connected - x.connected;
+      }
+    });
   }
 
   private getPeers(nodes: any[]) {

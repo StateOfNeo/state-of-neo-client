@@ -67,7 +67,7 @@
                                 (mouseleave)="hoverOffNode(node)"
                                 [style.paddingLeft]="i % 2 == 0 ? '0' : '15px'" 
                                 style="padding-right: 0">
-                                <div style="background: transparent; color: #666; border: 1px solid #999; margin-bottom: 15px; cursor: pointer" 
+                                <div style="background: transparent; color: #666; border: 1px solid #999; margin-bottom: 15px; cursor: pointer; min-height: 180px" 
                                     [style.background-color]="node.rpcEnabled ? 'transparent' : '#EEE'" 
                                     class="box default">
                                     <div class="box-title" style="padding-top: 0; padding-bottom: 0">
@@ -85,14 +85,14 @@
                                     </div>    
                                     <div class="box-body">
                                         <div class="col-sm-4 text-center" style="padding-top: 30px; padding-left: 0; padding-right: 0">
-                                            <i class="far fa-clock"></i> 99% UPTIME
+                                            <i style="font-size: 1.2em" class="far fa-clock"></i> {{node.upTime}}% UPTIME
                                         </div>
                                         <div class="col-sm-4 text-center" style="padding-left: 0; padding-right: 0; white-space: nowrap">
                                             <h2 style="margin-top: -40px" style="color: #666"><i class="fas fa-users"></i> {{node.connected}}</h2>
                                             <span style="font-size: 0.8em">{{node.version}}</span>
                                         </div>
                                         <div class="col-sm-4 text-center" style="padding-top: 27px; padding-left: 0; padding-right: 0">
-                                            <span style="font-size: 1.3em"><i class="fas fa-signal"></i> {{node.latency}} ms</span><br/>
+                                            <span class="{{getClassForNodeLatency(node)}}" style="font-size: 1.3em"><i class="fas fa-signal"></i> {{node.latency}} ms</span><br/>
                                         </div>
                                     </div>
                                 </div>
