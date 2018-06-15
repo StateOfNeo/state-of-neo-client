@@ -3,3 +3,11 @@
     width: 15px;
     fill: currentColor
 }
+
+div.box:hover {
+    background: #f5f5f5 !important;
+}
+
+div.box {
+    padding: 8px;
+}

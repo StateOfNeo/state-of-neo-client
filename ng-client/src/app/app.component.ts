@@ -7,6 +7,7 @@ import { NodeRpcService } from 'src/core/services/node-rpc.service';
 import { DYNAMIC_TYPE } from '@angular/compiler/src/output/output_ast';
 
 declare var $;
+declare var jvm;
 
 @Component({
   selector: 'app-root',
@@ -156,7 +157,7 @@ export class AppComponent implements OnInit {
         }));
 
         $('#world-map').html('');
-        $('#world-map').css('height', '442px');
+        $('#world-map').css('height', '412px');
         $('#world-map').vectorMap({
           map: 'world_mill_en',
           backgroundColor: 'transparent',
@@ -175,17 +176,20 @@ export class AppComponent implements OnInit {
             e.preventDefault();
           },
           onMarkerLabelShow: (e: any, label: any, code: string) => {
-            console.log(label);
             label.html('<h1>TEST TEST TEST</h1>');
 
-            console.log($(label));
+            console.log(label);
+  //          label.css('display', 'block');
+          },
+          onMarkerTipShow: (e: any, tip: any, code: string) => {
+            console.log(e);
           }
         });
 
         let map = $('#world-map').vectorMap('get', 'mapObject');
 
         $(window).resize(function () {
-          $('#world-map').css('height', '442px');
+          $('#world-map').css('height', '412px');
         });
       }
     });
@@ -194,16 +198,27 @@ export class AppComponent implements OnInit {
   hoverOffNode(node: any) {
     let map = $('#world-map').vectorMap('get', 'mapObject');
     map.clearSelectedMarkers();
+    map.label.css('display', 'none');
   }
 
   hoverNode(node: any) {
     let marker = this.getMarkerByName(this.getNodeDisplayText(node));
+    console.log(marker);
     marker.element.isHovered = true;
+
+    let coords = {
+      x: marker.element.properties.cx,
+      y: marker.element.properties.cy
+    }
 
     let index = marker.element.properties['data-index'];
 
     let map = $('#world-map').vectorMap('get', 'mapObject');
     map.setSelectedMarkers(index);
+    console.log(map);
+
+    // map.label.css('left', parseInt(coords.x) - 120 + 'px');
+    // map.label.css('top', parseInt(coords.y) + 155 + 'px');
   }
 
   getMarkerByName(name: string): any {
@@ -222,11 +237,11 @@ export class AppComponent implements OnInit {
 
   getClassForNodeBlocks(node: any) {
     let difference = this.latestBlock - node.blockCount;
-    if (difference <= 500) {
+    if (difference <= 1) {
       return '';
     }
 
-    if (difference > 500 && difference < 10000) {
+    if (difference > 1 && difference < 10000) {
       return 'text-warning';
     }
 
@@ -234,9 +249,9 @@ export class AppComponent implements OnInit {
   }
 
   getClassForNodeLatency(node: any) {
-    if (node.latency && node.latency < 350) {
+    if (node.latency && node.latency < 500) {
       return 'text-success';
-    } else if (node.latency >= 350 && node.latency < 2500) {
+    } else if (node.latency >= 500 && node.latency < 2500) {
       return 'text-warning';
     } else {
       return 'text-danger';
@@ -279,9 +294,11 @@ export class AppComponent implements OnInit {
         return 1;
       } else if (!y.connected && x.connected) {
         return -1;
-      } else {
+      } else if (x.connected != y.connected){
         return y.connected - x.connected;
       }
+
+      return x.latency - y.latency;
     });
   }
 
@@ -311,7 +328,7 @@ export class AppComponent implements OnInit {
       this.nodeRpcService.callRpcMethod(url, 'getconnectioncount', 1)
         .subscribe(res => {
           x.lastResponseTime = Date.now();
-          x.latency = x.lastResponseTime - requestStart;
+       //   x.latency = x.lastResponseTime - requestStart;
           let json = res.json();
           if (json.result) {
             x.connected = parseInt(json.result);
@@ -330,7 +347,7 @@ export class AppComponent implements OnInit {
       this.nodeRpcService.callRpcMethod(url, 'getversion', 3)
         .subscribe(res => {
           x.lastResponseTime = Date.now();
-          x.latency = x.lastResponseTime - requestStart;
+     //     x.latency = x.lastResponseTime - requestStart;
           let response = res.json();
           x.version = response.result.useragent;
           x.rpcEnabled = true;
@@ -348,8 +365,9 @@ export class AppComponent implements OnInit {
       let requestStart = Date.now();
       this.nodeRpcService.callRpcMethod(url, 'getblockcount', 3)
         .subscribe(res => {
-          x.lastResponseTime = Date.now();
-          x.latency = x.lastResponseTime - requestStart;
+          let now = Date.now();
+          x.lastResponseTime = now;
+          x.latency = now - requestStart;
           let response = res.json();
           x.blockCount = response.result;
           this.sort();
@@ -367,7 +385,7 @@ export class AppComponent implements OnInit {
       this.nodeRpcService.callRpcMethod(url, 'getrawmempool', 1)
         .subscribe(res => {
           x.lastResponseTime = Date.now();
-          x.latency = x.lastResponseTime - requestStart;
+      //    x.latency = x.lastResponseTime - requestStart;
           let response = res.json();
           x.pendingTransactions = response.result.length;
           this.sort();

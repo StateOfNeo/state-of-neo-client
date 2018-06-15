@@ -15,29 +15,29 @@
     <section id="middle" style="margin-left: 0">
         <div id="content" class="padding-20">
             <div class="row">
-                <div class="col-sm-6">
+                <div class="col-sm-6" style="padding-left: 0">
                     <div id="main-panel" class="panel panel-default" style="margin-bottom: 0">
                         <div class="panel-body" style="height: 100%">
-                            <div class="row" style="font-size: 2.5em">
-                                <div class="col-sm-4">
-                                    <div class="panel panel-body text-primary">
+                            <div class="row" style="font-size: 2em; margin-bottom: 20px">
+                                <div class="col-sm-5">
+                                    <div class="text-primary">
                                         <div style="font-size: 20px; "><strong>BEST BLOCK</strong></div>
-                                        <div id="last-block-stats">
+                                        <div id="last-block-stats" style="white-space: nowrap;">
                                             <i id="last-block-icon" class="fas fa-cube" style="font-size: 1.5em"></i>
                                             #{{latestBlock | number}}
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-sm-4">
-                                    <div class="panel panel-body text-primary">
+                                <div class="col-sm-4 text-right">
+                                    <div class="text-primary">
                                         <div style="font-size: 20px; "><strong>LAST BLOCK</strong></div>
                                         <i class="fa fa-hourglass-end spin"></i>
                                         {{secondsSinceLastBlock}} s ago
                                     </div>
                                 </div>
-                                <div class="col-sm-4">
-                                    <div class="panel panel-body text-primary">
-                                        <div style="font-size: 20px; "><strong>LIVE NODES</strong></div>
+                                <div class="col-sm-3 text-right">
+                                    <div class="text-primary">
+                                        <div style="font-size: 20px; white-space: nowrap; text-align: right"><strong>LIVE NODES</strong></div>
                                         <i class="fas fa-desktop"></i>
                                         {{rpcEnabled.length}}
                                     </div>
@@ -48,51 +48,77 @@
                                 <div id="world-map"><!-- Vectorial World Map --></div>       
                             </div> 
 
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="text-success" style="font-size: 1.7em; padding: 10px">
-                                        <i class="fas fa-desktop"></i>
-                                        {{rpcEnabled.length}} LIVE NODES
+                            <div class="well well-sm" style="margin-top: 30px">
+                                <div class="row" >
+                                    <div class="col-md-4">
+                                        <div class="text-primary" style="font-size: 1.3em; padding: 10px">
+                                            <i class="fas fa-desktop"></i>
+                                            {{rpcEnabled.length}} LIVE NODES
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-primary" style="font-size: 1.3em; padding: 10px">
+                                            <i class="fas fa-cube"></i>
+                                            20s AVERAGE BLOCK
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-primary" style="font-size: 1.3em; padding: 10px">
+                                            <i class="fas fa-cube"></i>
+                                            200 AVERAGE TX PER BLOCK
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="text-success" style="font-size: 1.3em; padding: 10px">
+                                            COLLECTIVE UPTIME
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-6" style="padding-left: 5px; padding-right: 0">
                     <div id="nodes-panel" class="panel panel-default" style="overflow-y: scroll; margin-bottom: 0">
                         <div class="panel-body">  
                             <div class="col-sm-6" *ngFor="let node of savedNodes; let i = index" 
                                 (mouseenter)="hoverNode(node)"
                                 (mouseleave)="hoverOffNode(node)"
                                 [style.paddingLeft]="i % 2 == 0 ? '0' : '15px'" 
-                                style="padding-right: 0">
+                                style="padding-right: 0; padding-bottom: 0">
                                 <div style="background: transparent; color: #666; border: 1px solid #999; margin-bottom: 15px; cursor: pointer; min-height: 180px" 
                                     [style.background-color]="node.rpcEnabled ? 'transparent' : '#EEE'" 
                                     class="box default">
                                     <div class="box-title" style="padding-top: 0; padding-bottom: 0">
-                                        <h4 style="color: #666">{{getNodeDisplayText(node)}}:{{node.port}}</h4>
-                                        <span class="{{(node.rpcEnabled ? 'text-success' : 'text-danger')}} "><i class="fas fa-circle"></i> RPC live</span><br/>
-                                        <span *ngIf="node.blockCount"><i class="fa fa-block"></i>#{{node.blockCount | number}}</span> <span *ngIf="nodeIsBehind(node)" [class]="getClassForNodeBlocks(node)"> ({{latestBlock - node.blockCount | number}} blocks behind)</span> <br />
-                                        <span>
-                                            {{node.pendingTransactions | number}} <small style="letter-spacing: 1px">PENDING TX</small>
-                                        </span>
+                                        <h4 style="color: #666; font-weight: bold; white-space: nowrap; font-size: 16px">{{getNodeDisplayText(node)}}:{{node.port}}</h4>
+                                        <span style="font-size: 1.2em" *ngIf="node.blockCount"><i class="fas fa-cube"></i> #{{node.blockCount | number}}</span> <small *ngIf="nodeIsBehind(node)" [class]="getClassForNodeBlocks(node)"> ({{latestBlock - node.blockCount | number}} behind)</small><br />
+                                        <span>{{node.pendingTransactions | number}} <small style="letter-spacing: 1px">PENDING TX</small></span>
+                                        
+                                        <div style="font-size: 0.75em; font-style: italic; margin-top: 5px">v. {{node.version}}</div>
+
+                                        <!-- <span>{{node.pendingTransactions | number}} <small style="letter-spacing: 1px">PENDING TX</small></span> -->
+
                                         <i class="fa fa-globe"></i>
-                                        <div style="position: absolute; top: 30px; right: 0px; width: 90px" class="text-center">
+                                        <div style="position: absolute; top: 30px; right: -2px; width: 90px" class="text-center">
                                             <img class="img img-thumbnail" width="35px" height="35px" src="assets/icons/tsvg/flag-{{node.locale}}.svg"/><br/>
                                             <span style="font-size: 0.8em">{{node.location}}</span>
                                         </div>
                                     </div>    
-                                    <div class="box-body">
-                                        <div class="col-sm-4 text-center" style="padding-top: 30px; padding-left: 0; padding-right: 0">
-                                            <i style="font-size: 1.2em" class="far fa-clock"></i> {{node.upTime}}% UPTIME
+                                    <div class="box-body" style="padding-bottom: 0">
+                                        <div class="col-sm-4 text-left" style="padding-left: 0; padding-right: 0; white-space: nowrap">
+                                            <div class="{{(node.rpcEnabled ? 'text-success' : 'text-danger')}} " style="margin-bottom: 10px; margin-top: 10px"><i class="fas fa-circle"></i> RPC {{node.rpcEnabled ? 'live' : 'off'}}</div>
+                                            <span ><i style="font-size: 1.15em" class="far fa-clock"></i> {{node.upTime}}% UPTIME</span>
                                         </div>
                                         <div class="col-sm-4 text-center" style="padding-left: 0; padding-right: 0; white-space: nowrap">
-                                            <h2 style="margin-top: -40px" style="color: #666"><i class="fas fa-users"></i> {{node.connected}}</h2>
-                                            <span style="font-size: 0.8em">{{node.version}}</span>
+                                            <h2 style="color: #666;"><i class="fas fa-users"></i> {{node.connected}}</h2>
+                                            <!-- <div style="font-size: 0.75em; margin-top: 20px; font-style: italic">{{node.version}}</div> -->
                                         </div>
-                                        <div class="col-sm-4 text-center" style="padding-top: 27px; padding-left: 0; padding-right: 0">
-                                            <span class="{{getClassForNodeLatency(node)}}" style="font-size: 1.3em"><i class="fas fa-signal"></i> {{node.latency}} ms</span><br/>
+                                        <div class="col-sm-4 text-right" style="padding-left: 0; padding-right: 0; white-space: nowrap">
+                                            <div class="{{(node.rpcEnabled ? 'text-success' : 'text-danger')}} " style="margin-bottom: 10px; margin-top: 10px">P2P {{node.rpcEnabled ? 'live' : 'off'}} <i class="fas fa-circle"></i></div>
+                                            <span class="{{getClassForNodeLatency(node)}}" style="font-size: 1.15em"><i class="fas fa-signal"></i> {{node.latency}} ms</span><br/>
                                         </div>
                                     </div>
                                 </div>
