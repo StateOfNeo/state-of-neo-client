@@ -19,7 +19,7 @@ declare var jvm;
 export class AppComponent implements OnInit {
   txAvCount: number;
   txCount: number;
-  allNodes: any[];
+  allNodes: any[] = [];
   canRefreshNodeList: boolean;
   allMessages: any[];
   canSendMessage: boolean;
@@ -66,14 +66,6 @@ export class AppComponent implements OnInit {
           name: this.getNodeDisplayText(x), 
           latLng: [this.getRandomCoordinate(), this.getRandomCoordinate()]
         }));
-
-        this.initMap(marks);
-
-        this.getVersion(this.savedRpc);
-        // this.getPeers(this.savedRpc);
-        this.getRawMemPool(this.savedRpc);
-        this.getBlockCount(this.savedRpc);
-        this.getConnectionsCount(this.savedRpc);
       });
 
     this._http.get(`${this.baseUrl}/api/block/getheight`)
@@ -87,11 +79,10 @@ export class AppComponent implements OnInit {
   }
 
   updateNodesData() {
-    this.getVersion(this.rpcEnabled);
-    // this.getPeers(this.rpcEnabled);
-    this.getRawMemPool(this.rpcEnabled);
-    this.getBlockCount(this.rpcEnabled);
-    this.getConnectionsCount(this.rpcEnabled);
+    this.getVersion(this.allNodes);
+    this.getConnectionsCount(this.allNodes);
+    this.getRawMemPool(this.allNodes);
+    this.getBlockCount(this.allNodes);
   }
 
   updateBlocks() {
@@ -149,41 +140,24 @@ export class AppComponent implements OnInit {
 
     this._nodeService.messageReceived.subscribe((nodes: any[]) => {
       console.log(nodes);
-      this.allNodes = nodes;
-      let thereareNew = true;
-      if (thereareNew) {
-        let markers = [];
-        this.allNodes.forEach(x => {
-          x.latency = 123;
-          x.lat = x.latitude;
-          x.long = x.longitude;
-          x.peers = parseInt((Math.random() * 180).toFixed(0));
-          x.type = 'RPC';
-          let saved = this.savedNodes.find(z => z.address == x.ip);
-          if (saved) {
-            console.log('found' + saved.url);
-          }
-          x.url = saved ? saved.url : '';
-          x.protocol = (saved && saved.protocol) ? saved.protocol : 'http';
-          x.port = (saved && saved.port) ? saved.port : '10331';
+      nodes.forEach(x => {
+        if (this.allNodes.find(z => this.getNodeDisplayText(z) == this.getNodeDisplayText(x))) {
+          return;
+        }
 
-          markers.push({
-            latLng: [x.lat, x.long], name: x.ip
-          });
+        this.allNodes.push(x);
+      })
+
+      let markers = [];
+      this.allNodes.forEach(x => {
+        markers.push({
+          latLng: [x.latitude, x.longitude], name: this.getNodeDisplayText(x)
         });
+      });
 
-        this.allNodes = this.allNodes.sort((x, y) => y.peers - x.peers);
-
-        this.getVersion(this.allNodes);
-
-        let marks = [];
-        this.savedNodes.forEach(x => marks.push({
-          name: this.getNodeDisplayText(x),
-          latLng: [this.getRandomCoordinate(), this.getRandomCoordinate()]
-        }));
-
-        this.initMap(marks);
-      }
+      this.sort();
+      this.updateNodesData();
+      this.initMap(markers);      
     });
   }
 
@@ -208,7 +182,7 @@ export class AppComponent implements OnInit {
         e.preventDefault();
       },
       onMarkerLabelShow: (e: any, label: any, code: string) => {
-        label.html('<h1>TEST TEST TEST</h1>');
+        // label.html('<h1>TEST TEST TEST</h1>');
 
       },
       onMarkerTipShow: (e: any, tip: any, code: string) => {
@@ -242,9 +216,6 @@ export class AppComponent implements OnInit {
 
     let map = $('#world-map').vectorMap('get', 'mapObject');
     map.setSelectedMarkers(index);
-
-    // map.label.css('left', parseInt(coords.x) - 120 + 'px');
-    // map.label.css('top', parseInt(coords.y) + 155 + 'px');
   }
 
   getMarkerByName(name: string): any {
@@ -258,7 +229,7 @@ export class AppComponent implements OnInit {
   }
 
   getNodeDisplayText(node: any) {
-    return node.url ? node.url : node.ip;
+    return node.successUrl ? node.successUrl : node.ip;
   }
 
   getClassForNodeBlocks(node: any) {
@@ -295,7 +266,7 @@ export class AppComponent implements OnInit {
   }
 
   private sort() {
-    this.savedNodes = this.savedNodes.sort((x, y) => {
+    this.allNodes = this.allNodes.sort((x, y) => {
       if (!x.rpcEnabled && y.rpcEnabled) {
         return 1;
       } else if (x.rpcEnabled && !y.rpcEnabled) {
@@ -332,7 +303,7 @@ export class AppComponent implements OnInit {
     nodes.forEach(x => {
       let url = `${x.protocol}://${x.url ? x.url : x.ip}:${x.port}`;
       let requestStart = Date.now();
-      this.nodeRpcService.callRpcMethod(url, 'getpeers', 1)
+      this.nodeRpcService.callRpcMethod(x.successUrl, 'getpeers', 1)
         .subscribe(res => {
           x.lastResponseTime = Date.now();
           x.latency = x.lastResponseTime - requestStart;
@@ -349,9 +320,7 @@ export class AppComponent implements OnInit {
 
   private getConnectionsCount(nodes: any[]) {
     nodes.forEach(x => {
-      let url = `${x.protocol}://${x.url ? x.url : x.ip}:${x.port}`;
-      let requestStart = Date.now();
-      this.nodeRpcService.callRpcMethod(url, 'getconnectioncount', 1)
+      this.nodeRpcService.callRpcMethod(x.successUrl, 'getconnectioncount', 1)
         .subscribe(res => {
           x.lastResponseTime = Date.now();
           //   x.latency = x.lastResponseTime - requestStart;
@@ -367,13 +336,14 @@ export class AppComponent implements OnInit {
   }
 
   private getVersion(nodes: any[]) {
-    nodes.filter(x => x.url).forEach(x => {
+    nodes.forEach(x => {
       let url = `${x.protocol}://${x.url ? x.url : x.ip}:${x.port}`;
       let requestStart = Date.now();
-      this.nodeRpcService.callRpcMethod(url, 'getversion', 3)
+      this.nodeRpcService.callRpcMethod(x.successUrl, 'getversion', 3)
         .subscribe(res => {
-          x.lastResponseTime = Date.now();
-          //     x.latency = x.lastResponseTime - requestStart;
+          let now = Date.now();
+          x.lastResponseTime = now;
+          x.latency = now - requestStart;
           let response = res.json();
           x.version = response.result.useragent;
           x.rpcEnabled = true;
@@ -389,7 +359,7 @@ export class AppComponent implements OnInit {
     nodes.forEach(x => {
       let url = `${x.protocol}://${x.url ? x.url : x.ip}:${x.port}`;
       let requestStart = Date.now();
-      this.nodeRpcService.callRpcMethod(url, 'getblockcount', 3)
+      this.nodeRpcService.callRpcMethod(x.successUrl, 'getblockcount', 3)
         .subscribe(res => {
           let now = Date.now();
           x.lastResponseTime = now;
@@ -408,7 +378,7 @@ export class AppComponent implements OnInit {
     nodes.forEach(x => {
       let url = `${x.protocol}://${x.url ? x.url : x.ip}:${x.port}`;
       let requestStart = Date.now();
-      this.nodeRpcService.callRpcMethod(url, 'getrawmempool', 1)
+      this.nodeRpcService.callRpcMethod(x.successUrl, 'getrawmempool', 1)
         .subscribe(res => {
           x.lastResponseTime = Date.now();
           //    x.latency = x.lastResponseTime - requestStart;

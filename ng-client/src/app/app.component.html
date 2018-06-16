@@ -90,7 +90,7 @@
                 <div class="col-sm-6" style="padding-left: 5px; padding-right: 0">
                     <div id="nodes-panel" class="panel panel-default" style="overflow-y: scroll; margin-bottom: 0">
                         <div class="panel-body">  
-                            <div class="col-sm-6" *ngFor="let node of savedNodes; let i = index" 
+                            <div class="col-sm-6" *ngFor="let node of allNodes; let i = index" 
                                 (mouseenter)="hoverNode(node)"
                                 (mouseleave)="hoverOffNode(node)"
                                 [style.paddingLeft]="i % 2 == 0 ? '0' : '15px'" 
@@ -99,7 +99,7 @@
                                     [style.background-color]="node.rpcEnabled ? 'transparent' : '#EEE'" 
                                     class="box default">
                                     <div class="box-title" style="padding-top: 0; padding-bottom: 0">
-                                        <h4 style="color: #666; font-weight: bold; white-space: nowrap; font-size: 16px">{{getNodeDisplayText(node)}}:{{node.port}}</h4>
+                                        <h4 style="color: #666; font-weight: bold; white-space: nowrap; font-size: 16px">{{getNodeDisplayText(node)}}</h4>
                                         <span style="font-size: 1.2em" *ngIf="node.blockCount"><i class="fas fa-cube"></i> #{{node.blockCount | number}}</span> <small *ngIf="nodeIsBehind(node)" [class]="getClassForNodeBlocks(node)"> ({{latestBlock - node.blockCount | number}} behind)</small><br />
                                         <span>{{node.pendingTransactions | number}} <small style="letter-spacing: 1px">PENDING TX</small></span>
                                         
@@ -108,8 +108,9 @@
                                         <!-- <span>{{node.pendingTransactions | number}} <small style="letter-spacing: 1px">PENDING TX</small></span> -->
 
                                         <i class="fa fa-globe"></i>
-                                        <div style="position: absolute; top: 30px; right: -2px; width: 90px" class="text-center">
-                                            <img class="img img-thumbnail" width="35px" height="35px" src="assets/icons/tsvg/flag-{{node.locale}}.svg"/><br/>
+                                        <div style="position: absolute; top: 35px; right: -2px; width: 90px" class="text-center">
+                                            <!-- <img class="img img-thumbnail" width="35px" height="35px" src="assets/icons/tsvg/flag-{{node.locale}}.svg"/><br/> -->
+                                            <img class="img img-thumbnail" style="width: 45px; height: 30px" src="{{node.flagUrl}}"/><br/>
                                             <span style="font-size: 0.8em">{{node.location}}</span>
                                         </div>
                                     </div>    
