@@ -22,6 +22,7 @@ export class AppComponent implements OnInit {
   latestBlock: number;
   secondsSinceLastBlock: number = 0;
   savedNodes: any[] = [];
+  baseUrl: string = 'http://localhost:5000';
 
   constructor(
     private _blockService: BlocksSignalRService,
@@ -29,8 +30,8 @@ export class AppComponent implements OnInit {
     private _http: Http,
     private nodeRpcService: NodeRpcService
   ) {
-    this._blockService.init(`http://localhost:5000/hubs/block`);
-    this._nodeService.init(`http://localhost:5000/hubs/node`);
+    this._blockService.init(`${this.baseUrl}/hubs/block`);
+    this._nodeService.init(`${this.baseUrl}/hubs/node`);
     this.subscribeToEvents();
     this.allMessages = [];
 
@@ -52,6 +53,13 @@ export class AppComponent implements OnInit {
       .subscribe(x => {
         this.savedNodes = x.json().sites;
         this.savedNodes.forEach(x => x.upTime = 99);
+        let marks = [];
+        this.savedNodes.forEach(x => marks.push({
+          name: this.getNodeDisplayText(x), 
+          latLng: [this.getRandomCoordinate(), this.getRandomCoordinate()]
+        }));
+
+        this.initMap(marks);
 
         this.getVersion(this.savedRpc);
         // this.getPeers(this.savedRpc);
@@ -60,13 +68,14 @@ export class AppComponent implements OnInit {
         this.getConnectionsCount(this.savedRpc);
       });
 
-    this._http.get(`http://localhost:5000/api/block/getheight`)
+    this._http.get(`${this.baseUrl}/api/block/getheight`)
       .subscribe(x => this.updateBestBlock(parseInt(x.json())));
 
       // window height - header - body padding top and bottom
     let height = $(window).height() - 50 - 20 - 20;
     $('#nodes-panel').css('height', height + 'px');
     $('#main-panel').css('height', height + 'px');
+
   }
 
   updateNodesData() {
@@ -79,14 +88,14 @@ export class AppComponent implements OnInit {
 
   updateBlocks() {
     if (this.canSendMessage) {
-      this._http.post(`http://localhost:5000/api/block`, null, this.getJsonHeaders())
+      this._http.post(`${this.baseUrl}/api/block`, null, this.getJsonHeaders())
         .subscribe();
     }
   }
 
   updateNodes() {
     if (this.canRefreshNodeList) {
-      this._http.post(`http://localhost:5000/api/node`, null, this.getJsonHeaders())
+      this._http.post(`${this.baseUrl}/api/node`, null, this.getJsonHeaders())
         .subscribe();
     }
   }
@@ -123,6 +132,7 @@ export class AppComponent implements OnInit {
     });
 
     this._nodeService.messageReceived.subscribe((nodes: any[])=>{
+      console.log(nodes);
       this.allNodes = nodes;
       let thereareNew = true;
       if (thereareNew) {        
@@ -156,42 +166,44 @@ export class AppComponent implements OnInit {
           latLng: [this.getRandomCoordinate(), this.getRandomCoordinate()]
         }));
 
-        $('#world-map').html('');
-        $('#world-map').css('height', '412px');
-        $('#world-map').vectorMap({
-          map: 'world_mill_en',
-          backgroundColor: 'transparent',
-          markers: marks,
-
-          hoverOpacity: 0.7,
-          hoverColor: false,
-          markersSelectable: true,
-          onMarkerSelected: (e: any, code: string, isSelected: boolean, selectedMarkers: any[]) => {
-            $('div.jvectormap-container').trigger('markerLabelShow', [map.label, code]);
-          },
-          onMarkerClick: (e: any, code: string) => {
-
-          },
-          onRegionLabelShow: (e: any) => {
-            e.preventDefault();
-          },
-          onMarkerLabelShow: (e: any, label: any, code: string) => {
-            label.html('<h1>TEST TEST TEST</h1>');
-
-            console.log(label);
-  //          label.css('display', 'block');
-          },
-          onMarkerTipShow: (e: any, tip: any, code: string) => {
-            console.log(e);
-          }
-        });
-
-        let map = $('#world-map').vectorMap('get', 'mapObject');
-
-        $(window).resize(function () {
-          $('#world-map').css('height', '412px');
-        });
+        this.initMap(marks);
       }
+    });
+  }
+
+  private initMap(markers) {
+    $('#world-map').html('');
+    $('#world-map').css('height', '412px');
+    $('#world-map').vectorMap({
+      map: 'world_mill_en',
+      backgroundColor: 'transparent',
+      markers: markers,
+
+      hoverOpacity: 0.7,
+      hoverColor: false,
+      markersSelectable: true,
+      onMarkerSelected: (e: any, code: string, isSelected: boolean, selectedMarkers: any[]) => {
+        $('div.jvectormap-container').trigger('markerLabelShow', [map.label, code]);
+      },
+      onMarkerClick: (e: any, code: string) => {
+
+      },
+      onRegionLabelShow: (e: any) => {
+        e.preventDefault();
+      },
+      onMarkerLabelShow: (e: any, label: any, code: string) => {
+        label.html('<h1>TEST TEST TEST</h1>');
+
+      },
+      onMarkerTipShow: (e: any, tip: any, code: string) => {
+
+      }
+    });
+
+    let map = $('#world-map').vectorMap('get', 'mapObject');
+
+    $(window).resize(function () {
+      $('#world-map').css('height', '412px');
     });
   }
 
@@ -203,7 +215,6 @@ export class AppComponent implements OnInit {
 
   hoverNode(node: any) {
     let marker = this.getMarkerByName(this.getNodeDisplayText(node));
-    console.log(marker);
     marker.element.isHovered = true;
 
     let coords = {
@@ -215,7 +226,6 @@ export class AppComponent implements OnInit {
 
     let map = $('#world-map').vectorMap('get', 'mapObject');
     map.setSelectedMarkers(index);
-    console.log(map);
 
     // map.label.css('left', parseInt(coords.x) - 120 + 'px');
     // map.label.css('top', parseInt(coords.y) + 155 + 'px');
