@@ -3,9 +3,7 @@ import { HubConnection, HubConnectionBuilder } from '@aspnet/signalr';
 
 @Injectable()
 export class SignalRService {
-    foodchanged = new EventEmitter();
     messageReceived = new EventEmitter<any>();
-    newCpuValue = new EventEmitter<Number>();
     connectionEstablished = new EventEmitter<Boolean>();
 
     private connectionIsEstablished = false;
@@ -39,6 +37,12 @@ export class SignalRService {
 
     private registerOnServerEvents(): void {
         this._hubConnection.on('Receive', (message: any) => {
+            this.messageReceived.emit(message);
+        });
+    }
+
+    public registerAdditionalEvent<T>(eventName: string, emitter: EventEmitter<T>): void {
+        this._hubConnection.on(eventName, (message: T) => {
             this.messageReceived.emit(message);
         });
     }

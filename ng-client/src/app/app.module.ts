@@ -9,6 +9,8 @@ import { SignalRService } from "src/core/services/signal-r.service";
 import { NodesSignalRService } from "src/core/services/nodes-signal-r.service";
 import { BlocksSignalRService } from "src/core/services/blocks-signal-r.service";
 import { NodeRpcService } from "src/core/services/node-rpc.service";
+import { TransCountSignalRService } from "src/core/services/trans-count-signal-r.service";
+import { TransAvgCountSignalRService } from "src/core/services/trans-avg-count-signal-r.service";
 
 @NgModule({
   declarations: [
@@ -21,7 +23,7 @@ import { NodeRpcService } from "src/core/services/node-rpc.service";
     FormsModule
   ],
   providers: [
-    SignalRService, NodesSignalRService, BlocksSignalRService,
+    SignalRService, NodesSignalRService, BlocksSignalRService, TransCountSignalRService, TransAvgCountSignalRService,
     NodeRpcService
   ],
   bootstrap: [AppComponent]
