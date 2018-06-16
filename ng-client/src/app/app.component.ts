@@ -5,6 +5,8 @@ import { BlocksSignalRService } from "src/core/services/blocks-signal-r.service"
 import { Http, RequestOptions, Headers } from "@angular/http";
 import { NodeRpcService } from 'src/core/services/node-rpc.service';
 import { DYNAMIC_TYPE } from '@angular/compiler/src/output/output_ast';
+import { TransCountSignalRService } from "src/core/services/trans-count-signal-r.service";
+import { TransAvgCountSignalRService } from "src/core/services/trans-avg-count-signal-r.service";
 
 declare var $;
 declare var jvm;
@@ -15,6 +17,8 @@ declare var jvm;
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+  txAvCount: number;
+  txCount: number;
   allNodes: any[];
   canRefreshNodeList: boolean;
   allMessages: any[];
@@ -26,11 +30,15 @@ export class AppComponent implements OnInit {
   constructor(
     private _blockService: BlocksSignalRService,
     private _nodeService: NodesSignalRService,
+    private _transCountService: TransCountSignalRService,
+    private _transAvgCountService: TransAvgCountSignalRService,
     private _http: Http,
     private nodeRpcService: NodeRpcService
   ) {
     this._blockService.init(`http://localhost:5000/hubs/block`);
     this._nodeService.init(`http://localhost:5000/hubs/node`);
+    this._transCountService.init(`http://localhost:5000/hubs/trans-count`);
+    this._transAvgCountService.init(`http://localhost:5000/hubs/trans-average-count`);
     this.subscribeToEvents();
     this.allMessages = [];
 
@@ -63,7 +71,7 @@ export class AppComponent implements OnInit {
     this._http.get(`http://localhost:5000/api/block/getheight`)
       .subscribe(x => this.updateBestBlock(parseInt(x.json())));
 
-      // window height - header - body padding top and bottom
+    // window height - header - body padding top and bottom
     let height = $(window).height() - 50 - 20 - 20;
     $('#nodes-panel').css('height', height + 'px');
     $('#main-panel').css('height', height + 'px');
@@ -105,10 +113,18 @@ export class AppComponent implements OnInit {
     this.latestBlock = height;
     $('#last-block-icon').addClass('fa-spin');
     $('#last-block-icon').css('animation-play-state', 'running');
-    setTimeout(() => $('#last-block-icon').css('animation-play-state', 'paused'), 2080);    
+    setTimeout(() => $('#last-block-icon').css('animation-play-state', 'paused'), 2080);
   }
 
   private subscribeToEvents(): void {
+    this._transCountService.messageReceived.subscribe((count: number) => {
+      this.txCount = count;
+    });
+
+    this._transAvgCountService.messageReceived.subscribe((avCount: number) => {
+      this.txAvCount = avCount;
+    });
+
     this._blockService.connectionEstablished.subscribe(() => {
       this.canSendMessage = true;
     });
@@ -122,15 +138,15 @@ export class AppComponent implements OnInit {
       this.updateNodes();
     });
 
-    this._nodeService.messageReceived.subscribe((nodes: any[])=>{
+    this._nodeService.messageReceived.subscribe((nodes: any[]) => {
       this.allNodes = nodes;
       let thereareNew = true;
-      if (thereareNew) {        
+      if (thereareNew) {
         let markers = [];
         this.allNodes.forEach(x => {
           x.latency = 123;
-          x.lat = this.getRandomCoordinate();
-          x.long = this.getRandomCoordinate();
+          x.lat = x.latitude;
+          x.long = x.longitude;
           x.peers = parseInt((Math.random() * 180).toFixed(0));
           x.type = 'RPC';
           let saved = this.savedNodes.find(z => z.address == x.ip);
@@ -152,7 +168,7 @@ export class AppComponent implements OnInit {
 
         let marks = [];
         this.savedNodes.forEach(x => marks.push({
-          name: this.getNodeDisplayText(x), 
+          name: this.getNodeDisplayText(x),
           latLng: [this.getRandomCoordinate(), this.getRandomCoordinate()]
         }));
 
@@ -179,7 +195,7 @@ export class AppComponent implements OnInit {
             label.html('<h1>TEST TEST TEST</h1>');
 
             console.log(label);
-  //          label.css('display', 'block');
+            //          label.css('display', 'block');
           },
           onMarkerTipShow: (e: any, tip: any, code: string) => {
             console.log(e);
@@ -223,12 +239,12 @@ export class AppComponent implements OnInit {
 
   getMarkerByName(name: string): any {
     let map = $('#world-map').vectorMap('get', 'mapObject');
-    
-    for(var propName in map.markers) {
+
+    for (var propName in map.markers) {
       if (map.markers[propName].config.name == name) {
         return map.markers[propName];
       }
-    }    
+    }
   }
 
   getNodeDisplayText(node: any) {
@@ -274,7 +290,7 @@ export class AppComponent implements OnInit {
         return 1;
       } else if (x.rpcEnabled && !y.rpcEnabled) {
         return -1;
-      } 
+      }
 
       if (x.type != 'RPC' && y.type == 'RPC') {
         return 1;
@@ -294,7 +310,7 @@ export class AppComponent implements OnInit {
         return 1;
       } else if (!y.connected && x.connected) {
         return -1;
-      } else if (x.connected != y.connected){
+      } else if (x.connected != y.connected) {
         return y.connected - x.connected;
       }
 
@@ -328,7 +344,7 @@ export class AppComponent implements OnInit {
       this.nodeRpcService.callRpcMethod(url, 'getconnectioncount', 1)
         .subscribe(res => {
           x.lastResponseTime = Date.now();
-       //   x.latency = x.lastResponseTime - requestStart;
+          //   x.latency = x.lastResponseTime - requestStart;
           let json = res.json();
           if (json.result) {
             x.connected = parseInt(json.result);
@@ -347,7 +363,7 @@ export class AppComponent implements OnInit {
       this.nodeRpcService.callRpcMethod(url, 'getversion', 3)
         .subscribe(res => {
           x.lastResponseTime = Date.now();
-     //     x.latency = x.lastResponseTime - requestStart;
+          //     x.latency = x.lastResponseTime - requestStart;
           let response = res.json();
           x.version = response.result.useragent;
           x.rpcEnabled = true;
@@ -385,7 +401,7 @@ export class AppComponent implements OnInit {
       this.nodeRpcService.callRpcMethod(url, 'getrawmempool', 1)
         .subscribe(res => {
           x.lastResponseTime = Date.now();
-      //    x.latency = x.lastResponseTime - requestStart;
+          //    x.latency = x.lastResponseTime - requestStart;
           let response = res.json();
           x.pendingTransactions = response.result.length;
           this.sort();
