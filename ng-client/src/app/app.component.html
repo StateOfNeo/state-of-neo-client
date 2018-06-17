@@ -52,37 +52,18 @@
                                 <div class="row" >
                                     <div class="col-md-4">
                                         <div class="text-primary" style="font-size: 1.3em; padding: 10px">
-                                            <i class="fas fa-desktop"></i>
-                                            {{rpcEnabled.length}} LIVE NODES
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="text-primary" style="font-size: 1.3em; padding: 10px">
                                             <i class="fas fa-cube"></i>
-                                            20s AVERAGE BLOCK
+                                            {{getAverageBlockTime()}}s AVERAGE BLOCK TIME
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="text-primary" style="font-size: 1.3em; padding: 10px">
-                                            <i class="fas fa-cube"></i>
-                                            {{ txCount }} TOTAL TRANSACTIONS SINCE GENESIS
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="text-primary" style="font-size: 1.3em; padding: 10px">
+                                        <div class="text-primary" style="font-size: 1.3em; padding: 10px; white-space: nowrap">
                                             <i class="fas fa-cube"></i>
                                             {{ txAvCount | number:'.1-3' }} AVERAGE TX PER BLOCK
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="text-success" style="font-size: 1.3em; padding: 10px">
-                                            COLLECTIVE UPTIME
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -124,7 +105,7 @@
                                             <!-- <div style="font-size: 0.75em; margin-top: 20px; font-style: italic">{{node.version}}</div> -->
                                         </div>
                                         <div class="col-sm-4 text-right" style="padding-left: 0; padding-right: 0; white-space: nowrap">
-                                            <div class="{{(node.rpcEnabled ? 'text-success' : 'text-danger')}} " style="margin-bottom: 10px; margin-top: 10px">P2P {{node.rpcEnabled ? 'live' : 'off'}} <i class="fas fa-circle"></i></div>
+                                            <div class="{{(node.p2pEnabled ? 'text-success' : 'text-danger')}} " style="margin-bottom: 10px; margin-top: 10px">P2P {{node.p2pEnabled ? 'live' : 'off'}} <i class="fas fa-circle"></i></div>
                                             <span class="{{getClassForNodeLatency(node)}}" style="font-size: 1.15em"><i class="fas fa-signal"></i> {{node.latency}} ms</span><br/>
                                         </div>
                                     </div>

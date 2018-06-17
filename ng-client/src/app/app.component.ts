@@ -7,6 +7,7 @@ import { NodeRpcService } from 'src/core/services/node-rpc.service';
 import { DYNAMIC_TYPE } from '@angular/compiler/src/output/output_ast';
 import { TransCountSignalRService } from "src/core/services/trans-count-signal-r.service";
 import { TransAvgCountSignalRService } from "src/core/services/trans-avg-count-signal-r.service";
+import { FailP2PSignalRService } from "src/core/services/fail-p2p-signal-r.service";
 
 declare var $;
 declare var jvm;
@@ -17,6 +18,7 @@ declare var jvm;
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+  bestBlock: number = 0;
   txAvCount: number;
   txCount: number;
   allNodes: any[] = [];
@@ -27,19 +29,23 @@ export class AppComponent implements OnInit {
   secondsSinceLastBlock: number = 0;
   savedNodes: any[] = [];
   baseUrl: string = 'http://localhost:5000';
+  blocksCounted: number = 0;
+  blocksCountStart: number = Date.now();
 
   constructor(
     private _blockService: BlocksSignalRService,
     private _nodeService: NodesSignalRService,
     private _transCountService: TransCountSignalRService,
     private _transAvgCountService: TransAvgCountSignalRService,
+    private _failP2PService: FailP2PSignalRService,
     private _http: Http,
     private nodeRpcService: NodeRpcService
   ) {
     this._blockService.init(`${this.baseUrl}/hubs/block`);
     this._nodeService.init(`${this.baseUrl}/hubs/node`);
-    this._transCountService.init(`http://localhost:5000/hubs/trans-count`);
-    this._transAvgCountService.init(`http://localhost:5000/hubs/trans-average-count`);
+    this._transCountService.init(`${this.baseUrl}/hubs/trans-count`);
+    this._transAvgCountService.init(`${this.baseUrl}/hubs/trans-average-count`);
+    this._failP2PService.init(`${this.baseUrl}/hubs/fail-p2p`);
     this.subscribeToEvents();
     this.allMessages = [];
 
@@ -49,23 +55,49 @@ export class AppComponent implements OnInit {
   }
 
   get savedRpc() {
-    return this.savedNodes.filter(x => x.type == 'RPC');
+    return this.allNodes.filter(x => x.type == 'RPC');
   }
 
   get rpcEnabled() {
-    return this.savedNodes.filter(x => x.type == 'RPC' && x.rpcEnabled);
+    return this.allNodes.filter(x => x.type == 'RPC' && x.rpcEnabled);
   }
 
   ngOnInit() {
-    this._http.get('..\\assets\\json\\mainnet.nodes.json')
-      .subscribe(x => {
-        this.savedNodes = x.json().sites;
-        this.savedNodes.forEach(x => x.upTime = 99);
-        let marks = [];
-        this.savedNodes.forEach(x => marks.push({
-          name: this.getNodeDisplayText(x), 
-          latLng: [this.getRandomCoordinate(), this.getRandomCoordinate()]
-        }));
+    this._http.get(`${this.baseUrl}/api/node`)
+      .subscribe(res => {
+        let nodes = res.json()
+        console.log(nodes);
+        let that = this;
+        nodes.forEach(x => {
+          if (that.allNodes.find(z => that.getNodeDisplayText(z) == that.getNodeDisplayText(x))) {
+            return;
+          }
+
+          x.p2pEnabled = true;
+          that.allNodes.push(x);
+        })
+
+        let markers = [];
+        this.allNodes.forEach(x => {
+          markers.push({
+            latLng: [x.latitude, x.longitude], name: that.getNodeDisplayText(x)
+          });
+        });
+
+        this.sort();
+        this.updateNodesData();
+        this.initMap(markers);
+      }, err => {
+        this._http.get('..\\assets\\json\\mainnet.nodes.json')
+          .subscribe(x => {
+            this.savedNodes = x.json().sites;
+            this.savedNodes.forEach(x => x.upTime = 99);
+            let marks = [];
+            this.savedNodes.forEach(x => marks.push({
+              name: this.getNodeDisplayText(x),
+              latLng: [this.getRandomCoordinate(), this.getRandomCoordinate()]
+            }));
+          });
       });
 
     this._http.get(`${this.baseUrl}/api/block/getheight`)
@@ -83,18 +115,12 @@ export class AppComponent implements OnInit {
     this.getConnectionsCount(this.allNodes);
     this.getRawMemPool(this.allNodes);
     this.getBlockCount(this.allNodes);
+    this.checkP2PStatus();
   }
 
   updateBlocks() {
     if (this.canSendMessage) {
       this._http.post(`${this.baseUrl}/api/block`, null, this.getJsonHeaders())
-        .subscribe();
-    }
-  }
-
-  updateNodes() {
-    if (this.canRefreshNodeList) {
-      this._http.post(`${this.baseUrl}/api/node`, null, this.getJsonHeaders())
         .subscribe();
     }
   }
@@ -130,35 +156,66 @@ export class AppComponent implements OnInit {
     });
 
     this._blockService.messageReceived.subscribe((message: number) => {
-      this.updateBestBlock(message);
+      // this.updateBestBlock(message);
     });
+
+    // this._failP2PService.messageReceived.subscribe((message: string[]) => {
+    //   this.allNodes.filter(x => message.some(z => x.successUrl)).forEach(x => {
+    //     x.p2pEnabled = false;
+    //   });
+    // });
 
     this._nodeService.connectionEstablished.subscribe(() => {
       this.canRefreshNodeList = true;
-      this.updateNodes();
     });
 
     this._nodeService.messageReceived.subscribe((nodes: any[]) => {
       console.log(nodes);
+      let that = this;
       nodes.forEach(x => {
-        if (this.allNodes.find(z => this.getNodeDisplayText(z) == this.getNodeDisplayText(x))) {
+        if (that.allNodes.find(z => that.getNodeDisplayText(z) == that.getNodeDisplayText(x))) {
           return;
         }
 
-        this.allNodes.push(x);
+        x.p2pEnabled = true;
+        that.allNodes.push(x);
       })
 
       let markers = [];
       this.allNodes.forEach(x => {
         markers.push({
-          latLng: [x.latitude, x.longitude], name: this.getNodeDisplayText(x)
+          latLng: [x.latitude, x.longitude], name: that.getNodeDisplayText(x)
         });
       });
 
       this.sort();
       this.updateNodesData();
-      this.initMap(markers);      
+      this.initMap(markers);
     });
+  }
+
+  updateAllNodes(nodes: any[]): void {
+    console.log(nodes);
+    let that = this;
+    nodes.forEach(x => {
+      if (that.allNodes.find(z => that.getNodeDisplayText(z) == that.getNodeDisplayText(x))) {
+        return;
+      }
+
+      x.p2pEnabled = true;
+      that.allNodes.push(x);
+    })
+
+    let markers = [];
+    this.allNodes.forEach(x => {
+      markers.push({
+        latLng: [x.latitude, x.longitude], name: that.getNodeDisplayText(x)
+      });
+    });
+
+    this.sort();
+    this.updateNodesData();
+    this.initMap(markers);
   }
 
   private initMap(markers) {
@@ -306,7 +363,7 @@ export class AppComponent implements OnInit {
       this.nodeRpcService.callRpcMethod(x.successUrl, 'getpeers', 1)
         .subscribe(res => {
           x.lastResponseTime = Date.now();
-          x.latency = x.lastResponseTime - requestStart;
+          // x.latency = x.lastResponseTime - requestStart;
           let json = res.json();
           if (json.result) {
             x.peers = parseInt(json.result.connected.length);
@@ -315,6 +372,18 @@ export class AppComponent implements OnInit {
             console.log(res);
           }
         });
+    });
+  }
+
+  private checkP2PStatus(): void {
+    this.allNodes.filter(x => x.ip).forEach(x => {
+      this._http.get(`${this.baseUrl}/api/values?ip=${x.ip}`)
+        .subscribe(res => {
+          x.p2pEnabled = res.json();
+          console.log(x.p2pEnabled);
+        }, err => {
+          console.log(err);
+        })
     });
   }
 
@@ -343,7 +412,7 @@ export class AppComponent implements OnInit {
         .subscribe(res => {
           let now = Date.now();
           x.lastResponseTime = now;
-          x.latency = now - requestStart;
+          x.latency = Math.round((now - requestStart));
           let response = res.json();
           x.version = response.result.useragent;
           x.rpcEnabled = true;
@@ -363,9 +432,13 @@ export class AppComponent implements OnInit {
         .subscribe(res => {
           let now = Date.now();
           x.lastResponseTime = now;
-          x.latency = now - requestStart;
+          // x.latency = now - requestStart;
           let response = res.json();
           x.blockCount = response.result;
+          if (response.result > this.latestBlock) {
+            this.updateBestBlock(response.result);
+            this.blocksCounted++;
+          }
           this.sort();
         }, err => {
           x.rpcEnabled = false;
@@ -387,6 +460,13 @@ export class AppComponent implements OnInit {
           this.sort();
         });
     });
+  }
+
+  private getAverageBlockTime() {
+    let now = Date.now();
+    let elapsed = (now - this.blocksCountStart) / 1000;
+
+    return Math.round(elapsed / this.blocksCounted);
   }
 
   private getRandomCoordinate() {
